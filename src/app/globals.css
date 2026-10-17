@@ -1,0 +1,105 @@
+@import "tailwindcss";
+
+/* ==================================================================
+   MARCA DO CLIENTE: troque só este bloco para cada negócio.
+   --primary é a cor principal (botões, destaques); --accent, o detalhe.
+   O resto da paleta acompanha.
+   ================================================================== */
+:root {
+  /* Studio Hair Premium: preto + dourado da flor do logo */
+  --primary: #a87a2a;
+  --primary-hover: #8c6520;
+  --primary-soft: #f6eedd;
+  --accent: #d4af5f;
+  --bg: #faf7f2;
+  --surface-2: #f2ece2;
+  --line: #e6dccb;
+  --ink: #1a1613;
+  --muted: #6f6558;
+}
+/* ================================================================== */
+
+:root {
+  --surface: #ffffff;
+  --success: #3f7a5a;
+  --success-soft: #e4f1e9;
+  --danger: #b4443f;
+  --danger-soft: #f9e4e2;
+  --warn: #9a6a1f;
+  --warn-soft: #f8edd6;
+  --whatsapp: #1f9d57;
+  --whatsapp-hover: #188447;
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-soft: var(--primary-soft);
+  --color-accent: var(--accent);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-whatsapp: var(--whatsapp);
+  --color-whatsapp-hover: var(--whatsapp-hover);
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-title), Georgia, serif;
+  --shadow-soft: 0 1px 2px rgb(43 33 37 / 0.04), 0 8px 24px -8px rgb(43 33 37 / 0.1);
+  --animate-fade-up: fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+  font-variant-numeric: lining-nums;
+}
+
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
