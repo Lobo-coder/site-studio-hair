@@ -174,6 +174,10 @@ export default async function Home() {
 
       <footer className="border-t border-line py-8 text-center text-xs text-muted">
         © {new Date().getFullYear()} {s.nome_negocio} ·{" "}
+        <Link href="/privacidade" className="hover:underline">
+          Privacidade
+        </Link>{" "}
+        ·{" "}
         <Link href="/admin" className="hover:underline">
           Área do profissional
         </Link>

@@ -3,11 +3,11 @@ import { CalendarCheck, CalendarRange, ChevronLeft, ChevronRight, MessageCircle,
 import { ActionForm, SubmitButton } from "@/components/admin/action-form";
 import { Card, Label, PageTitle } from "@/components/admin/page-title";
 import { btn, inputClass } from "@/components/ui/button";
-import { getSettings, getSummary, listAllServices, listAppointments, listBlocks, listResources, type Summary } from "@/lib/data";
+import { getSettings, getSummary, listAllServices, listAppointments, listBlocks, listResources, purgeOldData, type Summary } from "@/lib/data";
 import { fillMessage, formatMoney, formatPhone, whatsappLink } from "@/lib/format";
 import { addDays, addMonths, capitalize, formatDateLong, formatMonthYear, isValidDate, startOfMonth, timePart, todayInTz, weekdayOf } from "@/lib/time";
 import type { Appointment, AppointmentStatus } from "@/lib/types";
-import { changeStatus, createManualBooking } from "./actions";
+import { changeStatus, createManualBooking, forgetClient } from "./actions";
 
 const STATUS: Record<AppointmentStatus, { label: string; className: string }> = {
   agendado: { label: "Agendado", className: "bg-primary-soft text-primary" },
@@ -22,6 +22,8 @@ export default async function AgendaPage({ searchParams }: PageProps<"/admin">) 
   const date = typeof data === "string" && isValidDate(data) ? data : today;
   const next = addDays(date, 1);
   const monthStart = startOfMonth(today);
+  // Prazo de retenção da LGPD: o histórico velho some sozinho sempre que o painel abre.
+  await purgeOldData();
   const [appointments, blocks, services, resources, summary] = await Promise.all([
     listAppointments(`${date}T00:00`, `${next}T00:00`),
     listBlocks(`${date}T00:00`, `${next}T00:00`),
@@ -216,7 +218,19 @@ function AppointmentCard({ a, reminderTemplate, showResource }: { a: Appointment
             <StatusButton id={a.id} status="cancelado" label="Cancelar" confirm="Cancelar este agendamento? O horário volta a ficar livre no site." danger />
           </>
         ) : (
-          <StatusButton id={a.id} status="agendado" label="Voltar para agendado" />
+          <>
+            <StatusButton id={a.id} status="agendado" label="Voltar para agendado" />
+            <ActionForm
+              action={forgetClient}
+              confirm={`Apagar os dados de ${a.cliente_nome}? Some o nome, o WhatsApp e TODOS os agendamentos dessa pessoa. Não dá para desfazer.`}
+              className="ml-auto"
+            >
+              <input type="hidden" name="id" value={a.id} />
+              <SubmitButton variant="ghost" size="sm">
+                Apagar dados
+              </SubmitButton>
+            </ActionForm>
+          </>
         )}
       </div>
     </li>

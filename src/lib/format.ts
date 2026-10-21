@@ -56,6 +56,6 @@ export const whatsappLink = (phone: string, text?: string) =>
 export function plural(word: string) {
   if (/l$/i.test(word)) return word.replace(/l$/i, "is");
   if (/m$/i.test(word)) return word.replace(/m$/i, "ns");
-  if (/[rsz]$/i.test(word)) return `${word}es`;
+  if (/[rszx]$/i.test(word)) return `${word}es`;
   return `${word}s`;
 }

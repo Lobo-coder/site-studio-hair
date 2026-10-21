@@ -245,6 +245,36 @@ export async function setAppointmentStatus(id: string, status: AppointmentStatus
   await query("update agendamentos set status = $2 where id = $1", [id, status]);
 }
 
+/* ---------- dados pessoais (LGPD) ---------- */
+
+/** Por quanto tempo o histórico de agendamentos fica guardado. A página /privacidade cita este prazo. */
+export const RETENCAO_MESES = 12;
+
+/**
+ * Pedido de exclusão: apaga o cliente do agendamento informado e TODOS os agendamentos dele.
+ * Não dá para desfazer.
+ */
+export async function deleteClientData(appointmentId: string) {
+  const [row] = await query<{ cliente_id: string }>("select cliente_id from agendamentos where id = $1", [appointmentId]);
+  if (!row) return;
+  await query("delete from agendamentos where cliente_id = $1", [row.cliente_id]);
+  await query("delete from clientes where id = $1", [row.cliente_id]);
+}
+
+/**
+ * Apaga agendamentos mais antigos que RETENCAO_MESES e os clientes que ficaram sem nenhum.
+ * Roda quando o painel abre (é barato: usa o índice de starts_at). Clientes criados no último
+ * dia ficam de fora, para não pegar um agendamento sendo criado ao mesmo tempo.
+ */
+export async function purgeOldData() {
+  await query(`delete from agendamentos where starts_at < now() - make_interval(months => $1)`, [RETENCAO_MESES]);
+  await query(
+    `delete from clientes c
+      where c.criado_em < now() - interval '1 day'
+        and not exists (select 1 from agendamentos a where a.cliente_id = c.id)`,
+  );
+}
+
 /* ---------- resumo do painel ---------- */
 
 export interface Summary {

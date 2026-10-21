@@ -1,7 +1,7 @@
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { WEEKDAYS_SHORT, addDays, addMonths, capitalize, daysInMonth, formatMonthYear, startOfMonth, weekdayOf } from "@/lib/time";
+import { WEEKDAYS_SHORT, addDays, addMonths, capitalize, daysInMonth, formatDateLong, formatMonthYear, startOfMonth, weekdayOf } from "@/lib/time";
 
 interface Props {
   value: string | null;
@@ -31,7 +31,7 @@ export function Calendar({ value, onChange, month, onMonthChange, isEnabled, min
         >
           <ChevronLeft className="size-5" />
         </button>
-        <p className="font-display text-lg font-semibold">{capitalize(formatMonthYear(month))}</p>
+        <p aria-live="polite" className="font-display text-lg font-semibold">{capitalize(formatMonthYear(month))}</p>
         <button
           type="button"
           onClick={() => onMonthChange(addMonths(month, 1))}
@@ -42,7 +42,7 @@ export function Calendar({ value, onChange, month, onMonthChange, isEnabled, min
           <ChevronRight className="size-5" />
         </button>
       </div>
-      <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium text-muted">
+      <div aria-hidden className="grid grid-cols-7 gap-1 text-center text-xs font-medium text-muted">
         {WEEKDAYS_SHORT.map((d) => (
           <span key={d} className="py-1">
             {d}
@@ -63,6 +63,7 @@ export function Calendar({ value, onChange, month, onMonthChange, isEnabled, min
               disabled={!enabled}
               onClick={() => onChange(d)}
               aria-pressed={selected}
+              aria-label={capitalize(formatDateLong(d))}
               className={`aspect-square rounded-xl text-sm font-medium transition ${
                 selected
                   ? "bg-primary text-white"

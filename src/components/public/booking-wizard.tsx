@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Check, Clock, Loader2, MessageCircle } from "lucide-react";
 import { Calendar } from "./calendar";
 import { btn, inputClass } from "@/components/ui/button";
@@ -41,6 +41,19 @@ export function BookingWizard({ services, initialServiceId, openWeekdays, firstD
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [whatsappUrl, setWhatsappUrl] = useState<string | null>(null);
+
+  const heading = useRef<HTMLHeadingElement>(null);
+  const firstRender = useRef(true);
+
+  // A cada etapa, o foco vai para o título dela: quem usa teclado ou leitor de tela
+  // continua do começo da etapa nova em vez de ficar perdido no botão que sumiu.
+  useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+    heading.current?.focus();
+  }, [step]);
 
   const service = services.find((s) => s.id === serviceId) ?? null;
   const slotsKey = serviceId && date ? `${serviceId}|${date}|${reload}` : null;
@@ -111,7 +124,7 @@ export function BookingWizard({ services, initialServiceId, openWeekdays, firstD
         <span className="mx-auto flex size-14 items-center justify-center rounded-full bg-success-soft text-success">
           <Check className="size-7" />
         </span>
-        <h1 className="mt-4 text-3xl font-semibold">Horário agendado!</h1>
+        <h1 ref={heading} tabIndex={-1} className="mt-4 text-3xl font-semibold outline-none">Horário agendado!</h1>
         <p className="mt-2 text-muted">
           {service.nome} · {capitalize(formatDateLong(date))} às {time}
         </p>
@@ -136,8 +149,8 @@ export function BookingWizard({ services, initialServiceId, openWeekdays, firstD
     <div>
       <ol className="mb-6 flex gap-2" aria-label="Etapas">
         {STEPS.map((s, i) => (
-          <li key={s.id} className="flex-1">
-            <div className={`h-1.5 rounded-full ${i <= stepIndex ? "bg-primary" : "bg-line"}`} />
+          <li key={s.id} className="flex-1" aria-current={i === stepIndex ? "step" : undefined}>
+            <div aria-hidden className={`h-1.5 rounded-full ${i <= stepIndex ? "bg-primary" : "bg-line"}`} />
             <p className={`mt-1.5 text-xs ${i === stepIndex ? "font-semibold text-ink" : "text-muted"}`}>{s.label}</p>
           </li>
         ))}
@@ -151,7 +164,7 @@ export function BookingWizard({ services, initialServiceId, openWeekdays, firstD
 
       {step === "servico" && (
         <section className="animate-fade-up">
-          <h1 className="text-3xl font-semibold">O que você quer agendar?</h1>
+          <h1 ref={heading} tabIndex={-1} className="text-3xl font-semibold outline-none">O que você quer agendar?</h1>
           <ul className="mt-5 space-y-3">
             {services.map((s) => (
               <li key={s.id}>
@@ -181,7 +194,7 @@ export function BookingWizard({ services, initialServiceId, openWeekdays, firstD
       {step === "horario" && service && (
         <section className="animate-fade-up">
           <SelectedService service={service} onChange={() => setStep("servico")} />
-          <h1 className="mt-6 text-3xl font-semibold">Quando?</h1>
+          <h1 ref={heading} tabIndex={-1} className="mt-6 text-3xl font-semibold outline-none">Quando?</h1>
           <div className="mt-5 rounded-3xl border border-line bg-surface p-4 sm:p-6">
             <Calendar
               value={date}
@@ -198,13 +211,13 @@ export function BookingWizard({ services, initialServiceId, openWeekdays, firstD
             <div className="mt-6">
               <h2 className="text-lg font-semibold">{capitalize(formatDateLong(date))}</h2>
               {loadingSlots ? (
-                <p className="mt-3 flex items-center gap-2 text-sm text-muted">
+                <p role="status" className="mt-3 flex items-center gap-2 text-sm text-muted">
                   <Loader2 className="size-4 animate-spin" /> Buscando horários…
                 </p>
               ) : slotsError ? (
-                <p className="mt-3 text-sm text-danger">Não foi possível carregar os horários. Tente outro dia ou recarregue a página.</p>
+                <p role="alert" className="mt-3 text-sm text-danger">Não foi possível carregar os horários. Tente outro dia ou recarregue a página.</p>
               ) : slots?.list.length ? (
-                <div className="mt-3 grid grid-cols-4 gap-2 sm:grid-cols-6">
+                <div role="group" aria-label="Horários livres" className="mt-3 grid grid-cols-4 gap-2 sm:grid-cols-6">
                   {slots.list.map((t) => (
                     <button
                       key={t}
@@ -220,7 +233,7 @@ export function BookingWizard({ services, initialServiceId, openWeekdays, firstD
                   ))}
                 </div>
               ) : (
-                <p className="mt-3 text-sm text-muted">Nenhum horário livre nesse dia. Tente outra data.</p>
+                <p role="status" className="mt-3 text-sm text-muted">Nenhum horário livre nesse dia. Tente outra data.</p>
               )}
             </div>
           )}
@@ -253,7 +266,7 @@ export function BookingWizard({ services, initialServiceId, openWeekdays, firstD
             <span className="float-right text-primary">Trocar</span>
           </button>
 
-          <h1 className="mt-6 text-3xl font-semibold">Seus dados</h1>
+          <h1 ref={heading} tabIndex={-1} className="mt-6 text-3xl font-semibold outline-none">Seus dados</h1>
           <div className="mt-5 space-y-4">
             <label className="block">
               <span className="mb-1.5 block text-sm font-medium">Nome</span>
@@ -284,6 +297,12 @@ export function BookingWizard({ services, initialServiceId, openWeekdays, firstD
             {sending ? <Loader2 className="size-5 animate-spin" /> : <Check className="size-5" />}
             Confirmar agendamento
           </button>
+          <p className="mt-3 text-center text-xs text-muted">
+            Seu nome e WhatsApp servem só para organizar e confirmar este horário.{" "}
+            <Link href="/privacidade" className="underline hover:text-ink">
+              Privacidade
+            </Link>
+          </p>
         </form>
       )}
     </div>

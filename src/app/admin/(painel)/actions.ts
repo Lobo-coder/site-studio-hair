@@ -13,6 +13,7 @@ import {
   createResource,
   createService,
   deleteBlock,
+  deleteClientData,
   deleteResource,
   deleteService,
   saveBusinessHours,
@@ -49,6 +50,16 @@ export async function changeStatus(_: ActionState, fd: FormData): Promise<Action
   }
   refresh();
   return { ok: "Atualizado." };
+}
+
+/** Pedido de exclusão de dados (LGPD): apaga o cliente e todo o histórico dele. */
+export async function forgetClient(_: ActionState, fd: FormData): Promise<ActionState> {
+  await requireAdmin();
+  const id = z.uuid().safeParse(str(fd, "id"));
+  if (!id.success) return { error: "Pedido inválido." };
+  await deleteClientData(id.data);
+  refresh();
+  return { ok: "Dados apagados." };
 }
 
 export async function createManualBooking(_: ActionState, fd: FormData): Promise<ActionState> {
